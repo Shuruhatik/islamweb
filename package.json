@@ -1,0 +1,36 @@
+{
+  "name": "islamweb",
+  "version": "1.0.0",
+  "description": "To search for a fatwa on the IslamWeb.net (Unofficial Package)",
+  "author": "shuruhatik",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "islamweb",
+    "islamweb.net",
+    "اسلام ويب",
+    "إسلام ويب",
+    "بحث",
+    "فتوي",
+    "الاسلام",
+    "islam",
+    "muslim"
+  ],
+  "files": [
+    "/src"
+  ],
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "jsdom": "^21.1.1",
+    "puppeteer": "^19.8.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shuruhatik/islamweb.git"
+  }
+}
