@@ -1,66 +1,46 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Fatwa = exports.search = void 0;
-const puppeteer_1 = __importDefault(require("puppeteer"));
-const jsdom_1 = require("jsdom");
-class Fatwa {
-    constructor(id, title) {
-        this.title = title;
-        this.link = "https://www.islamweb.net" + id;
-        this.fatwa_number = +id.split("/")[3];
-        this.shortLink = "https://www.islamweb.net/ar/fatwa/" + this.fatwa_number;
+exports.search = exports.getDetails = void 0;
+const islamqa_js_1 = require("./islamqa.js");
+const islamweb_js_1 = require("./islamweb.js");
+const formatErrorMessage = (reason, method_name, type = "function", var1, var2) => {
+    console.log(`\x1b[36m`);
+    return `\u001b[38;5;251m> \u001b[38;5;2mIslamWeb Package\n    \u001b[38;5;160m${reason}\n\n    \u001b[38;5;160mClass:\n    \u001b[38;5;243m|  \u001b[38;5;34m'${method_name}' ${var1 ? `\x1b[4m\u001b[38;5;243m->\x1b[0m \u001b[38;5;243m\u001b[38;5;34m'${var1}'\u001b[38;5;243m` : ``}${var2 ? `\u001b[38;5;243m\x1b[4m->\x1b[0m \u001b[38;5;34m'${var2}'` : ""}\x1b[0m`;
+};
+async function getDetails(options) {
+    if (!options.website)
+        throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));
+    if (options.website.includes("islamweb")) {
+        if (options.link && !options.fatwa_number)
+            options.fatwa_number = +options.link.split("/")[5];
+        const fatwa = new islamweb_js_1.IslamWebFatwa(`${options.fatwa_number}`);
+        return await fatwa.getDetails(options.puppeteerLaunchOptions || {});
     }
-    async getDetails() {
-        const browser = await puppeteer_1.default.launch();
-        const page = await browser.newPage();
-        await page.goto(this.link);
-        const bodyHandle = await page.$('body');
-        const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
-        const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-        const dom = new jsdom_1.JSDOM(sanitizedHtml);
-        const map = new Map();
-        const elements = dom.window.document.getElementsByTagName('*');
-        for (let i = 0; i < elements.length; i++) {
-            const element = elements[i];
-            if (!map.has(element.tagName))
-                map.set(element.tagName, []);
-            map.get(element.tagName).push(element.textContent.trim());
-        }
-        const content = map.has("BODY") ? map.get("BODY")[0].replaceAll("\t", "") : map.get("DIV")[0].replaceAll("\t", "");
-        const askTitle = "السؤال";
-        const askEndIndex = content.indexOf('\n\n', content.indexOf(askTitle) + askTitle.length);
-        const answerTitle = 'الإجابــة';
-        const answerEndIndex = content.indexOf('\n\n', content.indexOf(answerTitle) + answerTitle.length);
-        const ask = content.substring(askEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
-        const answer = content.substring(answerEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
-        const dateStr = content.match(/تاريخ النشر:(.*)/) ? content.match(/تاريخ النشر:(.*)/)[1].trim() : undefined;
-        const fatwa_number = content.match(/رقم الفتوى:(.*)/) ? Number(content.match(/رقم الفتوى:(.*)/)[1].trim()) : undefined;
-        const dateSplit = dateStr.split(" - ");
-        return { link: this.link, fatwa_number, answer, ask, created_at: { text: dateStr, date: dateSplit[1].replace("م", "").replaceAll("-", "/").trim(), hijri: dateSplit[0] } };
+    else if (options.website.includes("islamq")) {
+        if (options.link && !options.fatwa_number)
+            options.fatwa_number = +options.link.split("/")[5];
+        const fatwa = new islamqa_js_1.IslamQaFatwa(`${options.fatwa_number}`, undefined, options.lang || "ar");
+        return await fatwa.getDetails(options.puppeteerLaunchOptions || {});
     }
+    else
+        throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));
 }
-exports.Fatwa = Fatwa;
-async function search(input, timeout = 1500) {
-    const browser = await puppeteer_1.default.launch();
-    const page = await browser.newPage();
-    await page.goto('https://www.islamweb.net/ar/articles/index.php?page=websearch&stxt=' + encodeURI(input.trim()));
-    await page.waitForTimeout(timeout);
-    const bodyHandle = await page.$('body');
-    const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
-    const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    const dom = new jsdom_1.JSDOM(sanitizedHtml);
-    const links = [];
-    const elements = dom.window.document.getElementsByTagName('*');
-    for (let i = 0; i < elements.length; i++) {
-        if (elements[i].textContent && elements[i].href && elements[i].href !== "/ar/fatwa/" && elements[i].href.startsWith("/ar/fatwa/") && elements[i].tagName == "A") {
-            links.push(new Fatwa(elements[i].href, elements[i].textContent.trim()));
-        }
+exports.getDetails = getDetails;
+async function search(input, options) {
+    if (!options.website)
+        throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));
+    if (options.website.includes("islamweb")) {
+        return await (0, islamweb_js_1.islamweb_search)(input, options.timeout || 3000, options.puppeteerLaunchOptions || {});
     }
-    await browser.close();
-    return links;
+    else if (options.website.includes("islamq")) {
+        if (!options.lang)
+            options.lang = "ar";
+        if (!["ar", "fr", "en", "tr", "fa", "id", "ur", "ug", "ge", "bn", "ru", "es", "hi", "pt", "tg"].some(l => l == options.lang))
+            throw Error(formatErrorMessage('You must choose a language from among these available languages, which is "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg"', "search", "function", "options", "lang"));
+        return await (0, islamqa_js_1.islamqa_search)(input, options.lang, options.timeout || undefined, options.puppeteerLaunchOptions || {});
+    }
+    else
+        throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));
 }
 exports.search = search;
 //# sourceMappingURL=index.js.map

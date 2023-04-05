@@ -1,6 +1,6 @@
 {
   "name": "islamweb",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "To search for a fatwa on the IslamWeb.net (Unofficial Package)",
   "author": "shuruhatik",
   "main": "./src/index.js",
@@ -10,6 +10,11 @@
   "keywords": [
     "islamweb",
     "islamweb.net",
+    "الإسلام سؤال وجواب",
+    "فتوي ديني",
+    "سؤال ديني",
+    "islamqa",
+    "islamqa.info",
     "اسلام ويب",
     "إسلام ويب",
     "بحث",

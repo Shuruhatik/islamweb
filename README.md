@@ -1,8 +1,7 @@
 
 IslamWeb [![NPM version](https://img.shields.io/npm/v/islamweb.svg?style=flat-square&color=informational)](https://npmjs.com/package/islamweb)
 ====
-تساعدك الحزمة في الحصول على معلومات حول فتوى أو البحث عن فتوى بسهولة باستخدام موقع إسلام ويب
-- ملحوظة: الحزمة لم تصدر بشكل رسمي من موقع إسلام ويب وهذه حزمة غير رسمية
+تساعدك الحزمة في الحصول على معلومات حول فتوى أو البحث عن فتوى بسهولة باستخدام موقع [إسلام ويب](https://islamweb.net/) أو من خلال موقع [الإسلام سؤال وجواب](https://islamqa.info/ar/) 
 
 التثبيت
 ----------
@@ -20,48 +19,47 @@ bun install islamweb
 -----------------
 استخدام [Node.js](https://nodejs.org/) `require()`
 ```js
-const { search, Fatwa } =  require('islamweb');
+const { search, getDetails } =  require('islamweb');
 ```
 [TypeScript](https://www.typescriptlang.org/)/ES Module support
 ```ts
-import { search, Fatwa } from  'islamweb';
+import { search, getDetails } from  'islamweb';
 ```
 [Deno](https://deno.land)
 ```js
-import { search, Fatwa } from  'https://esm.sh/islamweb';
+import { search, getDetails } from  'https://esm.sh/islamweb';
 ```
 
 مثال:
 -----------------
 - ابحث عن فتوى مثل الزكاة او غيرها او سؤال
 ```js
-const input = "الزكاة"
-const results = await search(input ) //timeout = 1500ms by defult
-
-// مغ تغير التايم اوت
-const results_with_timeout = await search(input,5000) 
-/* 
-ملحوظة يجب علي تغيره في حال أن جميع نتائج البحث كانت مصفوفة فارغة 
-وذلك قد يرجع بسبب الانترنت لديك او لدي مزود الخدمة لديك لذلك يجب عليك تمديد مدة التايم اوت
-*/
-
-
-if(results.length == 0){
-	console.log("لا يوجد نتائج بحث أو ان تايم اوت للبحث من انترنت لم تكفي")
-	// يجب عليك اعادة محاولة وتغير مدة تايم اوت لمدة مناسبة للانترنت لديك
-} else {
-	console.log(results) // نتائج البحث
-}
+search("الزكاءة", {
+	website:  "islamqa", // او يمكننك وضع "islamweb"
+	//lang:"ar"|"fr"|"en"|"tr"|"fa"|"id"|"ur"|"ug"|"ge"|"bn"|"ru"|"es"|  "hi"  |  "pt"  |  "tg",
+	/* 
+		 بوضع الافتراضي تكون اللغة العربية وخيار اختيار اللغة مدعوم فقط islamqa
+	*/
+	//timeout: 2000, // ينصح بوضع تايم اوت في حال كان هناك بطئ في الانترنت
+	//puppeteerLaunchOptions: {} // يمكننك وضع خيارات اضافية تعمل في تشغيل puppeteer
+}).then(async results => {
+	if(results.length == 0){
+		console.log("لا يوجد نتائج بحث")
+	} else {
+		 console.log(results)//نتائج البحث
+		 console.log(await  results[0].getDetails())//يقوم بارجاع لك تفاصيل الفتوي الاولي
+	 }
+})
 ```
 - جلب تفاصيل الفتوى برقم الفتوى
 ```js
-// مثال من خلال نتيجة بحث
-const index = 0;
-results[index].getDetails().then(console.log);
-
-// من خلال رقم الفتوي بشكل يدوي
-const fatwa = new Fatwa("165");
-.fatwa getDetails().then(console.log);
+getDetails({
+  fatwa_number:69818,
+  //link:"",// أو يمكننك وضع رابط الفتوي بدل من رقم الفتوي 
+  website:"islamqa" // حال كانت الفتوي من اسلام ويب يمكننك وضع "islamweb"
+}).then(result => {
+  console.log(result)
+})
 ```
 
 النتائج
@@ -69,33 +67,45 @@ const fatwa = new Fatwa("165");
 - مثال لنتيجة البحث `search()`
 ```js
 [
-  Fatwa {
-    title: 'يزكى المال إذا تحققت فيه شروط الوجوب',
-    link: 'https://www.islamweb.net/ar/fatwa/165/?searchKey=0nLBYLOawddbP7v2tBaR&wheretosearch=0&order=&RecID=0&srchwords=%C7%E1%D2%DF%C7%C9&R1=0&R2=0&hIndex=',
-    fatwa_number: 165,
-    shortLink: 'https://www.islamweb.net/ar/fatwa/165'
+  IslamQaFatwa {
+    title: 'حكم العمل في البرمجة في شركة تبيع برامجها لعملاء منهم بنوك ربوية ...',
+    link: 'https://islamqa.info/ar/answers/179833/%D8%AD%D9%83%D9%85-%D8%A7%D9%84%D8%B9%D9%85%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D8%A8%D8%B1%D9%85%D8%AC%D8%A9-%D9%8
+1%D9%8A-%D8%B4%D8%B1%D9%83%D8%A9-%D8%AA%D8%A8%D9%8A%D8%B9-%D8%A8%D8%B1%D8%A7%D9%85%D8%AC%D9%87%D8%A7-%D9%84%D8%B9%D9%85%D9%84%D8%A7%D8%A1-%D9%85%D9%86%D9%87%D9%8
+5-%D8%A8%D9%86%D9%88%D9%83-%D8%B1%D8%A8%D9%88%D9%8A%D8%A9-%D9%88%D8%B4%D8%B1%D9%83%D8%A7%D8%AA-%D8%AA%D8%A7%D9%85%D9%8A%D9%86',
+    fatwa_number: 179833,
+    shortLink: 'https://islamqa.info/ar/answers/179833'
   },
-  Fatwa {
-    title: 'كيفية زكاة الأسهم',
-    link: 'https://www.islamweb.net/ar/fatwa/186/?searchKey=0nLBYLOawddbP7v2tBaR&wheretosearch=0&order=&RecID=1&srchwords=%C7%E1%D2%DF%C7%C9&R1=0&R2=0&hIndex=',
-    fatwa_number: 186,
-    shortLink: 'https://www.islamweb.net/ar/fatwa/186'
+  IslamQaFatwa {
+    title: 'حكم العمل في البرمجة في شركة تبيع برامجها لعملاء منهم بنوك ربوية ...',
+    link: 'https://islamqa.info/ar/answers/179833/%D8%AD%D9%83%D9%85-%D8%A7%D9%84%D8%B9%D9%85%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D8%A8%D8%B1%D9%85%D8%AC%D8%A9-%D9%8
+1%D9%8A-%D8%B4%D8%B1%D9%83%D8%A9-%D8%AA%D8%A8%D9%8A%D8%B9-%D8%A8%D8%B1%D8%A7%D9%85%D8%AC%D9%87%D8%A7-%D9%84%D8%B9%D9%85%D9%84%D8%A7%D8%A1-%D9%85%D9%86%D9%87%D9%8
+5-%D8%A8%D9%86%D9%88%D9%83-%D8%B1%D8%A8%D9%88%D9%8A%D8%A9-%D9%88%D8%B4%D8%B1%D9%83%D8%A7%D8%AA-%D8%AA%D8%A7%D9%85%D9%8A%D9%86',
+    fatwa_number: 179833,
+    shortLink: 'https://islamqa.info/ar/answers/179833'
   }, ...and more results
 ]
 ```
 - مثال لنتيجة تفاصيل الفتوي `getDetails()`
 ```js
 {
-  title: 'يزكى المال إذا تحققت فيه شروط الوجوب',
-  link: 'https://www.islamweb.net/ar/fatwa/165/?searchKey=0nLBYLOawddbP7v2tBaR&wheretosearch=0&order=&RecID=0&srchwords=%C7%E1%D2%DF%C7%C9&R1=0&R2=0&hIndex=',
-  fatwa_number: 165,
-  shortLink: 'https://www.islamweb.net/ar/fatwa/165',
-  answer: 'الحمد لله والصلاة والسلام على رسول الله وبعد:          يخرج من المال ربع العشر ـ زكاة ـ إذا بلغ نصاباً، والنصاب هو عشرون مثقالاً وهو ما يعادل 85 جراما من الذهب، فإذا كان لديك مال قيمته تعادل قيمة 85 جراما من الذهب، زائداً عن حاجاتك الأصلية، وقد حال عليه الحول، وجب عليك إخراج الزكاة  عنه.   والله أعلم.',
-  ask: 'ما هو نصاب زكاة النقود؟\n    الدولار الأمريكي =150 بزتة إسبانية',
+  link: 'https://islamqa.info/ar/answers/37765',
+  fatwa_number: 37765,
+  ask: 'أعلم أن بعض العلماء قد حرموا التدخين، ولكن لماذا يحرم التدخين أثناء الصيام مع أنه لا يوجد شيء من الطعام أو الشراب يدخل الحلق ؟',
+  answer: 'الحمد لله.الدخان محرم ولا يشك في تحريمه – انظر السؤال رقم ( 10922 ) و ( 7432 ) - ، وأما سبب كونه مفطراً فلأن له جرماً يصل إلى الجوف والمعدة .\n' +    
+    '\n' +
+    'سئل الشيخ ابن عثيمين عن استنشاق العطر للصائم فقال :\n' +
+    '\n' +
+    'يجوز أن يستعملها في نهار رمضان وأن يستنشقها إلا البخور لا يستنشقه لأن له جرماً يصل إلى المعدة وهو الدخان .\n' +
+    '\n' +
+    '" فتاوى إسلامية " ( 2 / 128 ) .\n' +
+    '\n' +
+    'والدخان مثل البخور في كونهما لهما جرم لكنهما يختلفان من حيث حكم الأصل فالبخور حلال طيب والدخان محرم خبيث .',
   created_at: {
-    text: 'الثلاثاء 28 ربيع الآخر 1420 هـ - 10-8-1999 م',
-    date: '10/8/1999',
-    hijri: 'الثلاثاء 28 ربيع الآخر 1420 هـ'
+    text: '22-09-2008',
+    day: 22,
+    month: 9,
+    year: 2008,
+    iso: 2008-09-21T22:00:00.000Z
   }
 }
 ```
