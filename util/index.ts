@@ -5,7 +5,6 @@ import { IslamWebFatwa, islamweb_search } from "./islamweb.js";
 
 interface SearchOptions {
   website: "islamqa.info" | "islamweb.net" | "islamweb" | "islamqa";
-  timeout?: number;
   lang?: "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg";
   puppeteerLaunchOptions?: PuppeteerLaunchOptions
 }
@@ -52,11 +51,11 @@ async function getDetails(options: FatwaDetails): Promise<{
 async function search(input: string, options: SearchOptions): Promise<IslamQaFatwa[] | IslamWebFatwa[]> {
   if (!options.website) throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"))
   if (options.website.includes("islamweb")) {
-    return await islamweb_search(input, options.timeout || 3000, options.puppeteerLaunchOptions || {})
+    return await islamweb_search(input, options.puppeteerLaunchOptions || {})
   } else if (options.website.includes("islamq")) {
     if (!options.lang) options.lang = "ar";
     if (!["ar", "fr", "en", "tr", "fa", "id", "ur", "ug", "ge", "bn", "ru", "es", "hi", "pt", "tg"].some(l => l == options.lang)) throw Error(formatErrorMessage('You must choose a language from among these available languages, which is "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg"', "search", "function", "options", "lang"))
-    return await islamqa_search(input, options.lang, options.timeout || undefined, options.puppeteerLaunchOptions || {})
+    return await islamqa_search(input, options.lang, options.puppeteerLaunchOptions || {})
   } else throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"))
 }
 

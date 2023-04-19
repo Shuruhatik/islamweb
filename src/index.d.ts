@@ -3,7 +3,6 @@ import { IslamQaFatwa } from "./islamqa.js";
 import { IslamWebFatwa } from "./islamweb.js";
 interface SearchOptions {
     website: "islamqa.info" | "islamweb.net" | "islamweb" | "islamqa";
-    timeout?: number;
     lang?: "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg";
     puppeteerLaunchOptions?: PuppeteerLaunchOptions;
 }

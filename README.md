@@ -34,13 +34,26 @@ import { search, getDetails } from  'https://esm.sh/islamweb';
 -----------------
 - ابحث عن فتوى مثل الزكاة او غيرها او سؤال
 ```js
+//الإسلام سؤال وجواب
 search("الزكاءة", {
-	website:  "islamqa", // او يمكننك وضع "islamweb"
+	website:  "islamqa",
 	//lang:"ar"|"fr"|"en"|"tr"|"fa"|"id"|"ur"|"ug"|"ge"|"bn"|"ru"|"es"|  "hi"  |  "pt"  |  "tg",
 	/* 
 		 بوضع الافتراضي تكون اللغة العربية وخيار اختيار اللغة مدعوم فقط islamqa
 	*/
-	//timeout: 2000, // ينصح بوضع تايم اوت في حال كان هناك بطئ في الانترنت
+	//puppeteerLaunchOptions: {} // يمكننك وضع خيارات اضافية تعمل في تشغيل puppeteer
+}).then(async results => {
+	if(results.length == 0){
+		console.log("لا يوجد نتائج بحث")
+	} else {
+		 console.log(results)//نتائج البحث
+		 console.log(await  results[0].getDetails())//يقوم بارجاع لك تفاصيل الفتوي الاولي
+	 }
+})
+
+//إسلام ويب
+search("الزكاءة", {
+	website:  "islamweb",
 	//puppeteerLaunchOptions: {} // يمكننك وضع خيارات اضافية تعمل في تشغيل puppeteer
 }).then(async results => {
 	if(results.length == 0){

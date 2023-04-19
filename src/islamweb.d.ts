@@ -5,7 +5,7 @@ declare class IslamWebFatwa {
     fatwa_number: number;
     shortLink: string;
     constructor(url: string, title?: string | undefined);
-    getDetails(puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<{
+    getDetails(puppeteerLaunchOptions?: PuppeteerLaunchOptions, timeout?: number): Promise<{
         fatwa_number: number | undefined;
         answer: string;
         ask: string;
@@ -20,5 +20,5 @@ declare class IslamWebFatwa {
         };
     }>;
 }
-declare function islamweb_search(input: string, timeout?: number, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamWebFatwa[]>;
+declare function islamweb_search(input: string, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamWebFatwa[]>;
 export { IslamWebFatwa, islamweb_search };

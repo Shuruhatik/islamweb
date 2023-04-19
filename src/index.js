@@ -30,14 +30,14 @@ async function search(input, options) {
     if (!options.website)
         throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));
     if (options.website.includes("islamweb")) {
-        return await (0, islamweb_js_1.islamweb_search)(input, options.timeout || 3000, options.puppeteerLaunchOptions || {});
+        return await (0, islamweb_js_1.islamweb_search)(input, options.puppeteerLaunchOptions || {});
     }
     else if (options.website.includes("islamq")) {
         if (!options.lang)
             options.lang = "ar";
         if (!["ar", "fr", "en", "tr", "fa", "id", "ur", "ug", "ge", "bn", "ru", "es", "hi", "pt", "tg"].some(l => l == options.lang))
             throw Error(formatErrorMessage('You must choose a language from among these available languages, which is "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg"', "search", "function", "options", "lang"));
-        return await (0, islamqa_js_1.islamqa_search)(input, options.lang, options.timeout || undefined, options.puppeteerLaunchOptions || {});
+        return await (0, islamqa_js_1.islamqa_search)(input, options.lang, options.puppeteerLaunchOptions || {});
     }
     else
         throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"));

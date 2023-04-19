@@ -45,14 +45,12 @@ class IslamQaFatwa {
     }
 }
 exports.IslamQaFatwa = IslamQaFatwa;
-async function islamqa_search(input, lang, timeout, puppeteerLaunchOptions) {
+async function islamqa_search(input, lang, puppeteerLaunchOptions) {
     const browser = await puppeteer_1.default.launch({
         args: ["--no-sandbox", "--disabled-setupid-sandbox"], ...puppeteerLaunchOptions
     });
     const page = await browser.newPage();
     await page.goto('https://islamqa.info/' + lang + '/google-search?q=' + encodeURI(input.trim()) + '&search_engine=google');
-    if (timeout)
-        await page.waitForTimeout(timeout);
     const bodyHandle = await page.$('body');
     const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
     const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');

@@ -9,16 +9,17 @@ const jsdom_1 = require("jsdom");
 class IslamWebFatwa {
     constructor(url, title) {
         this.title = title;
-        this.link = url.split("/")[5] ? url : "https://www.islamweb.net/ar/fatwa/" + url;
+        this.link = url.split("/")[5] ? url : "https://www.islamweb.net" + url;
         this.fatwa_number = this.link.split("/")[5] ? +this.link.split("/")[5] : 0;
         this.shortLink = "https://www.islamweb.net/ar/fatwa/" + this.fatwa_number;
     }
-    async getDetails(puppeteerLaunchOptions) {
+    async getDetails(puppeteerLaunchOptions, timeout = 0) {
         const browser = await puppeteer_1.default.launch({
             args: ["--no-sandbox", "--disabled-setupid-sandbox"], ...puppeteerLaunchOptions
         });
         const page = await browser.newPage();
         await page.goto(this.link);
+        await page.waitForTimeout(timeout);
         const bodyHandle = await page.$('body');
         const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
         const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -36,6 +37,7 @@ class IslamWebFatwa {
         const askEndIndex = content.indexOf('\n\n', content.indexOf(askTitle) + askTitle.length);
         const answerTitle = 'الإجابــة';
         const answerEndIndex = content.indexOf('\n\n', content.indexOf(answerTitle) + answerTitle.length);
+        console.log(content.indexOf(answerTitle));
         const ask = content.substring(askEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
         const answer = content.substring(answerEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
         const arabicDate = content.match(/تاريخ النشر:(.*)/) ? content.match(/تاريخ النشر:(.*)/)[1].trim() : undefined;
@@ -53,13 +55,12 @@ class IslamWebFatwa {
     }
 }
 exports.IslamWebFatwa = IslamWebFatwa;
-async function islamweb_search(input, timeout = 3500, puppeteerLaunchOptions) {
+async function islamweb_search(input, puppeteerLaunchOptions) {
     const browser = await puppeteer_1.default.launch({
         args: ["--no-sandbox", "--disabled-setupid-sandbox"], ...puppeteerLaunchOptions
     });
     const page = await browser.newPage();
-    await page.goto('https://www.islamweb.net/ar/articles/index.php?page=websearch&stxt=' + encodeURI(input.trim()));
-    await page.waitForTimeout(timeout);
+    await page.goto('https://search.islamweb.net/ver3/ar/SearchEngine/fattab.php?start=0&R1=0&wheretosearch=0&txt=' + encodeURI(input.trim()));
     const bodyHandle = await page.$('body');
     const html = await page.evaluate((body) => body.innerHTML, bodyHandle);
     const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');

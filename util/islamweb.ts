@@ -6,11 +6,11 @@ class IslamWebFatwa {
   fatwa_number: number;
   shortLink: string;
   constructor(url: string, readonly title?: string) {
-    this.link = url.split("/")[5] ? url : "https://www.islamweb.net/ar/fatwa/" + url;
+    this.link = url.split("/")[5] ? url : "https://www.islamweb.net" + url;
     this.fatwa_number = this.link.split("/")[5] ? +this.link.split("/")[5] : 0;
     this.shortLink = "https://www.islamweb.net/ar/fatwa/" + this.fatwa_number;
   }
-  async getDetails(puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<{
+  async getDetails(puppeteerLaunchOptions?: PuppeteerLaunchOptions, timeout: number = 0): Promise<{
     fatwa_number: number | undefined;
     answer: string;
     ask: string;
@@ -29,7 +29,7 @@ class IslamWebFatwa {
     });
     const page = await browser.newPage();
     await page.goto(this.link);
-
+    await page.waitForTimeout(timeout)
     const bodyHandle = await page.$('body');
     const html = await page.evaluate((body: any) => body.innerHTML, bodyHandle);
     const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -46,6 +46,7 @@ class IslamWebFatwa {
     const askEndIndex = content.indexOf('\n\n', content.indexOf(askTitle) + askTitle.length);
     const answerTitle = 'الإجابــة';
     const answerEndIndex = content.indexOf('\n\n', content.indexOf(answerTitle) + answerTitle.length);
+    console.log(content.indexOf(answerTitle))
     const ask = content.substring(askEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
     const answer = content.substring(answerEndIndex, content.length).trim().split("\n\n\n\n")[0].trim();
     const arabicDate = content.match(/تاريخ النشر:(.*)/) ? content.match(/تاريخ النشر:(.*)/)[1].trim() : undefined;
@@ -54,22 +55,21 @@ class IslamWebFatwa {
     const dateSplit = arabicDate && arabicDate.split(" - ")[0] ? arabicDate.split(" - ") : undefined;
     const gregorianDateMatch = dateSplit ? arabicDate.match(/(\d{1,2})-(\d{1,2})-(\d{4})/) : undefined;
     return {
-      link: this.link, fatwa_number, ask,answer, created_at: {
-        text:gregorianDateMatch && gregorianDateMatch[0] ? gregorianDateMatch[0] : arabicDate, hijri: arabicDate,
-        day: gregorianDateMatch && gregorianDateMatch[1] ? +gregorianDateMatch[1] : undefined, month: gregorianDateMatch && gregorianDateMatch[2] ? +gregorianDateMatch[2] : undefined, year: gregorianDateMatch && gregorianDateMatch[3] ? +gregorianDateMatch[3] : undefined, iso:gregorianDateMatch && gregorianDateMatch[0] ? new Date(+gregorianDateMatch[3], +gregorianDateMatch[2] - 1, +gregorianDateMatch[1]) : undefined
+      link: this.link, fatwa_number, ask, answer, created_at: {
+        text: gregorianDateMatch && gregorianDateMatch[0] ? gregorianDateMatch[0] : arabicDate, hijri: arabicDate,
+        day: gregorianDateMatch && gregorianDateMatch[1] ? +gregorianDateMatch[1] : undefined, month: gregorianDateMatch && gregorianDateMatch[2] ? +gregorianDateMatch[2] : undefined, year: gregorianDateMatch && gregorianDateMatch[3] ? +gregorianDateMatch[3] : undefined, iso: gregorianDateMatch && gregorianDateMatch[0] ? new Date(+gregorianDateMatch[3], +gregorianDateMatch[2] - 1, +gregorianDateMatch[1]) : undefined
       }
     }
   }
 }
 
-async function islamweb_search(input: string, timeout: number = 3500, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamWebFatwa[]> {
+async function islamweb_search(input: string, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamWebFatwa[]> {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disabled-setupid-sandbox"], ...puppeteerLaunchOptions
   });
   const page = await browser.newPage();
-  await page.goto('https://www.islamweb.net/ar/articles/index.php?page=websearch&stxt=' + encodeURI(input.trim()));
+  await page.goto('https://search.islamweb.net/ver3/ar/SearchEngine/fattab.php?start=0&R1=0&wheretosearch=0&txt=' + encodeURI(input.trim()));
 
-  await page.waitForTimeout(timeout);
   const bodyHandle = await page.$('body');
   const html = await page.evaluate((body: any) => body.innerHTML, bodyHandle);
   const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');

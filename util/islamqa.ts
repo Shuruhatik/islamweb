@@ -1,4 +1,4 @@
-import puppeteer, { PuppeteerLaunchOptions } from 'puppeteer';
+import puppeteer,{PuppeteerLaunchOptions} from 'puppeteer';
 import { JSDOM } from 'jsdom';
 
 class IslamQaFatwa {
@@ -10,7 +10,7 @@ class IslamQaFatwa {
     this.fatwa_number = this.link.split("/")[5] ? +this.link.split("/")[5] : 0;
     this.shortLink = `https://islamqa.info/${lang || "ar"}/answers/${this.fatwa_number}`;
   }
-  async getDetails(puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<{
+  async getDetails(puppeteerLaunchOptions?: any): Promise<{
     fatwa_number: number | undefined;
     answer: string;
     ask: string;
@@ -54,14 +54,13 @@ class IslamQaFatwa {
   }
 }
 
-async function islamqa_search(input: string, lang: string, timeout?: number, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamQaFatwa[]> {
+async function islamqa_search(input: string, lang: string, puppeteerLaunchOptions?: PuppeteerLaunchOptions): Promise<IslamQaFatwa[]> {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disabled-setupid-sandbox"], ...puppeteerLaunchOptions
   });
   const page = await browser.newPage();
   await page.goto('https://islamqa.info/' + lang + '/google-search?q=' + encodeURI(input.trim()) + '&search_engine=google');
 
-  if (timeout) await page.waitForTimeout(timeout);
   const bodyHandle = await page.$('body');
   const html = await page.evaluate((body: any) => body.innerHTML, bodyHandle);
   const sanitizedHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
