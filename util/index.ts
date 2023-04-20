@@ -1,19 +1,16 @@
-import puppeteer, { PuppeteerLaunchOptions } from 'puppeteer';
-import { JSDOM } from 'jsdom';
 import { islamqa_search, IslamQaFatwa } from "./islamqa.js";
 import { IslamWebFatwa, islamweb_search } from "./islamweb.js";
 
 interface SearchOptions {
   website: "islamqa.info" | "islamweb.net" | "islamweb" | "islamqa";
+  page?: string | number;
   lang?: "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg";
-  puppeteerLaunchOptions?: PuppeteerLaunchOptions
 }
 interface FatwaDetails {
   link?: string;
   fatwa_number?: string | number;
   lang?: "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg";
   website: "islamqa.info" | "islamweb.net" | "islamweb" | "islamqa";
-  puppeteerLaunchOptions?: PuppeteerLaunchOptions;
 }
 
 const formatErrorMessage = (reason: string, method_name: string, type: string = "function", var1?: string, var2?: string): string => {
@@ -26,6 +23,9 @@ async function getDetails(options: FatwaDetails): Promise<{
   answer: string;
   ask: string;
   link: string;
+  description?: string | null;
+  title?: string | null;
+  related_fatwas?: IslamWebFatwa[];
   created_at: {
     text: string;
     year?: number;
@@ -39,11 +39,11 @@ async function getDetails(options: FatwaDetails): Promise<{
   if (options.website.includes("islamweb")) {
     if (options.link && !options.fatwa_number) options.fatwa_number = +options.link.split("/")[5];
     const fatwa = new IslamWebFatwa(`${options.fatwa_number}`)
-    return await fatwa.getDetails(options.puppeteerLaunchOptions || {})
+    return await fatwa.getDetails()
   } else if (options.website.includes("islamq")) {
     if (options.link && !options.fatwa_number) options.fatwa_number = +options.link.split("/")[5];
     const fatwa = new IslamQaFatwa(`${options.fatwa_number}`, undefined, options.lang || "ar")
-    return await fatwa.getDetails(options.puppeteerLaunchOptions || {})
+    return await fatwa.getDetails()
   } else throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"))
 
 }
@@ -51,11 +51,11 @@ async function getDetails(options: FatwaDetails): Promise<{
 async function search(input: string, options: SearchOptions): Promise<IslamQaFatwa[] | IslamWebFatwa[]> {
   if (!options.website) throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"))
   if (options.website.includes("islamweb")) {
-    return await islamweb_search(input, options.puppeteerLaunchOptions || {})
+    return await islamweb_search(input, options.page ? +options.page : 1)
   } else if (options.website.includes("islamq")) {
     if (!options.lang) options.lang = "ar";
     if (!["ar", "fr", "en", "tr", "fa", "id", "ur", "ug", "ge", "bn", "ru", "es", "hi", "pt", "tg"].some(l => l == options.lang)) throw Error(formatErrorMessage('You must choose a language from among these available languages, which is "ar" | "fr" | "en" | "tr" | "fa" | "id" | "ur" | "ug" | "ge" | "bn" | "ru" | "es" | "hi" | "pt" | "tg"', "search", "function", "options", "lang"))
-    return await islamqa_search(input, options.lang, options.puppeteerLaunchOptions || {})
+    return await islamqa_search(input, options.lang, options.page ? +options.page : 1)
   } else throw Error(formatErrorMessage("You must choose a search method through islamweb.net or islamqa.info", "search", "function", "options", "website"))
 }
 
